@@ -1,0 +1,2 @@
+- [ ] Phân tích thuật toán
+- [ ] Tạo GUI bằng *chưa biết*
