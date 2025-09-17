@@ -1,4 +1,4 @@
-from random import random
+from random import choice
 from typing import List, Literal, TypedDict
 
 
@@ -25,7 +25,8 @@ class Wordle:
     # Dữ liệu để theo dõi trạng thái trò chơi
     target_word: str  # Từ cần đoán
     guessed_words: list[WordResult]  # Danh sách các từ đã đoán và kết quả của chúng
-    attempts: int  # Số lần đoán còn lại
+    current_attempt: int  # Lần đoán hiện tại (bắt đầu từ 1 -> max)
+    max_attempts: int  # Số lần đoán tối đa
 
     def __init__(
         self,
@@ -36,33 +37,50 @@ class Wordle:
     ) -> None:
         # Dữ liệu khởi tạo trò chơi
         self.word_list = word_list
-        self.attempts = max_attempts
+        self.current_attempt = 1
+        self.max_attempts = max_attempts
         self.word_length = word_length
         self.guessed_words = []
 
         # Từ cần đoán
-        if target_word not in word_list:
-            raise ValueError("Từ mục tiêu không hợp lệ! Nó phải nằm trong danh sách từ")
-        self.target_word = target_word if target_word else random.choice(self.word_list)
+        if target_word and target_word not in word_list:
+            raise ValueError(f"Từ mục tiêu không hợp lệ! Nó phải nằm trong danh sách từ. Từ không đúng hiện tại: {target_word}")
+        self.target_word = target_word if target_word else choice(self.word_list)
 
-    def guess(self, word: str) -> WordResult:
+    def guess(self, word: str) -> WordResult | None:
         """
         Đoán một từ và nhận kết quả
+
+        Nếu số lần đoán đã đạt đến giới hạn, trả về None
         """
+        if self.current_attempt > self.max_attempts:
+            return None
+
         if word not in self.word_list:
             raise ValueError("Từ không hợp lệ.")
 
-        result: WordResult = {"word": word, "results": []}
+        result: WordResult = {"word": word, "results": ["X"] * self.word_length}
+        target_chars = list(self.target_word)
+        used = [False] * self.word_length  # Đánh dấu ký tự đã dùng trong target_word
 
+        # Lần 1: Đánh dấu "G"
         for i, char in enumerate(word):
-            if char == self.target_word[i]:
-                result["results"].append("G")
-            elif char in self.target_word:
-                result["results"].append("Y")
-            else:
-                result["results"].append("X")
+            if char == target_chars[i]:
+                result["results"][i] = "G"
+                used[i] = True  # Đã dùng ký tự này
+
+        # Lần 2: Đánh dấu "Y"
+        for i, char in enumerate(word):
+            if result["results"][i] == "G":
+                continue
+            for j, t_char in enumerate(target_chars):
+                if not used[j] and char == t_char:
+                    result["results"][i] = "Y"
+                    used[j] = True
+                    break
+            # Nếu không tìm thấy, giữ nguyên là "X"
 
         self.guessed_words.append(result)
-        self.attempts -= 1
+        self.current_attempt += 1
 
         return result

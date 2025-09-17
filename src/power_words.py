@@ -68,4 +68,4 @@ class PowerWords:
             if power_word[0] == word:
                 return (power_word[0], power_word[1], index)
 
-        return None
+        raise ValueError("Từ không có trong danh sách từ điểm mạnh!")
