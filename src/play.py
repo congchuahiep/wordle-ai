@@ -57,8 +57,8 @@ def play_first_strike(
 
     print(f"Đoán từ: {best_word} -> Kết quả: {''.join(result['results'])}")
 
-    while result["word"] != game.target_word and game.attempts > 0:
-        print(f"Số lần đoán còn lại: {game.attempts}")
+    while result["word"] != game.target_word and game.current_attempt <= game.max_attempts:
+        print(f"Số lần đoán còn lại: {game.max_attempts - (game.current_attempt - 1)}")
 
         # Cập nhật kiến thức dựa trên kết quả đoán
         for i, res in enumerate(result["results"]):
@@ -117,8 +117,8 @@ def play_first_strike(
             print(f"Chúc mừng! Bạn đã đoán đúng từ '{game.target_word}'")
 
     print(f"Từ cần đoán là: {game.target_word}")
-    print(f"Số lần đoán còn lại: {game.attempts}")
-    if game.attempts == 0 and result["word"] != game.target_word:
+    print(f"Số lần đoán còn lại: {game.max_attempts - (game.current_attempt - 1)}")
+    if game.current_attempt > game.max_attempts and result["word"] != game.target_word:
         print("Bạn đã hết lượt đoán. Chơi lại nhé!")
 
 
