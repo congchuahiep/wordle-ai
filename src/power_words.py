@@ -1,3 +1,5 @@
+import random
+
 class PowerWords:
     """
     Lớp này quản lý danh sách các từ cùng với "điểm mạnh" của chúng.

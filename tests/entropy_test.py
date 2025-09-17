@@ -6,25 +6,23 @@ import logging
 import time
 from contextlib import redirect_stdout
 
-from src.play import play_first_strike
+from src.play import play_entropy
 from src.word_list import get_word_list
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 # Thiết lập logger
 logging.basicConfig(
-    filename="tests/first_strike_test.log",
+    filename="tests/entropy_test.log",
     filemode="w",
     level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
+    format="%(asctime)s [%(levelname)s] %(message)s"
 )
 logger = logging.getLogger(__name__)
-
 
 def load_words_from_json(filename):
     with open(os.path.join(DATA_DIR, filename), "r") as f:
         return json.load(f)
-
 
 def timed_run(func, *args, **kwargs):
     """Chạy func và trả về (kết quả, thời gian chạy giây)"""
@@ -33,8 +31,7 @@ def timed_run(func, *args, **kwargs):
     elapsed = time.perf_counter() - start
     return result, elapsed
 
-
-class PlayFirstStrikeTest(unittest.TestCase):
+class PlayEntropyTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.word_list = get_word_list()
@@ -43,28 +40,23 @@ class PlayFirstStrikeTest(unittest.TestCase):
         words = load_words_from_json(dataset_name)
         total_tries = 0
         total_fails = 0
+        total_time = 0.0
 
         f = io.StringIO()
-        total_time = 0.0
         for target in words:
-            # Sửa play_first_strike để trả về số lượt đoán và trạng thái thành công/thất bại
-            with redirect_stdout(f):  # Chặn mọi print bên trong play_first_strike
-                result, elapsed = timed_run(
-                    play_first_strike,
-                    self.word_list,
-                    target_word=target,
-                    max_attempts=6,
-                )
+            # Sửa play_entropy để trả về số lượt đoán và trạng thái thành công/thất bại
+            with redirect_stdout(f):  # Chặn mọi print bên trong play_entropy
+                result, elapsed = timed_run(play_entropy, self.word_list, target_word=target, max_attempts=6)
             total_time += elapsed
             if result and result <= 6:
                 print(f"Target: {target}, Attempts: {result}")
                 total_tries += result
             else:
-                total_tries += 6  # Khi thua vẫn cộng vào số lượt đoán
+                total_tries += 6 # Khi thua vẫn cộng vào số lượt đoán
                 total_fails += 1
 
         avg_tries = total_tries / len(words)
-        success_rate = (len(words) - total_fails) / len(words)
+        success_rate =  (len(words) - total_fails) / len(words)
         avg_time = total_time / len(words)
         return avg_tries, success_rate, avg_time
 
@@ -127,7 +119,6 @@ class PlayFirstStrikeTest(unittest.TestCase):
         print(f"<<<Random Letter>>>> success rate: {success_rate} %")
         print(f"<<<Random Letter>>>> Thời gian trung bình: {avg_time} s")
         print()
-
 
 if __name__ == "__main__":
     unittest.main(buffer=True)

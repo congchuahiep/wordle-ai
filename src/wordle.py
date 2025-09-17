@@ -28,6 +28,8 @@ class Wordle:
     current_attempt: int  # Lần đoán hiện tại (bắt đầu từ 1 -> max)
     max_attempts: int  # Số lần đoán tối đa
 
+    is_won: bool
+
     def __init__(
         self,
         word_list: list[str],
@@ -41,10 +43,13 @@ class Wordle:
         self.max_attempts = max_attempts
         self.word_length = word_length
         self.guessed_words = []
+        self.is_won = False
 
         # Từ cần đoán
         if target_word and target_word not in word_list:
-            raise ValueError(f"Từ mục tiêu không hợp lệ! Nó phải nằm trong danh sách từ. Từ không đúng hiện tại: {target_word}")
+            raise ValueError(
+                f"Từ mục tiêu không hợp lệ! Nó phải nằm trong danh sách từ. Từ không đúng hiện tại: {target_word}"
+            )
         self.target_word = target_word if target_word else choice(self.word_list)
 
     def guess(self, word: str) -> WordResult | None:
@@ -82,5 +87,8 @@ class Wordle:
 
         self.guessed_words.append(result)
         self.current_attempt += 1
+
+        if result["results"] == ["G"] * self.word_length:
+            self.is_won = True
 
         return result
