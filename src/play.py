@@ -180,9 +180,10 @@ def find_best_entropy_guess(
 
 def play_entropy(word_list: list[str], target_word: str = None, max_attempts: int = 6):
     """
-    Chơi wordle tự động với chiến thuật Entropy.
-    Lượt đầu tiên sử dụng Power Word để tối ưu tốc độ, các lượt sau sử dụng Entropy
-    để tối đa hóa lượng thông tin thu được.
+    Chơi wordle tự động với chiến thuật Entropy
+    Lượt đầu tiên sử dụng Power Word để tối ưu tốc độ.
+    Các lượt sau, AI chỉ được phép chọn từ đoán nằm trong danh sách các đáp án
+    tiềm năng còn lại để tối đa hóa cơ hội chiến thắng.
     """
     # --- KHỞI TẠO ---
     power_words = PowerWords(word_list)
@@ -197,25 +198,28 @@ def play_entropy(word_list: list[str], target_word: str = None, max_attempts: in
     # --- VÒNG LẶP CHÍNH CỦA GAME ---
     while game.current_attempt <= 6:
         print("-" * 20)
-        print(f"{game.current_attempt}")
+        print(f"Lượt {game.current_attempt}")
         print(f"Số lượng đáp án khả thi còn lại: {len(possible_answers)}")
 
         # --- LỰA CHỌN TỪ ĐOÁN ---
         # Lượt đầu tiên: Dùng Power Word
         if game.current_attempt == 1:
             print("Lượt 1: Chọn Power Word mạnh nhất.")
-            current_guess = power_words[0][
-                0
-            ]  # Lấy từ có điểm cao nhất, ví dụ 'soare' hoặc 'slate'
-        # Các lượt sau: Dùng Entropy
+            current_guess = power_words[0][0]
+        # Các lượt sau: Dùng Entropy (Hard Mode)
         else:
-            print("Đang tính toán từ có Entropy cao nhất... (có thể mất một lát)")
-            # all_valid_guesses có thể là word_list hoặc power_words để tăng tốc
-            # Sử dụng word_list sẽ cho kết quả chính xác nhất
-            current_guess = find_best_entropy_guess(possible_answers, word_list)
+            print("Đang tính toán từ có Entropy cao nhất (Hard Mode)...")
+            # --- ĐIỂM THAY ĐỔI QUAN TRỌNG ---
+            # Không gian tìm kiếm (search_space) chính là danh sách các đáp án còn lại.
+            # Điều này buộc AI phải chọn một từ có khả năng là đáp án đúng.
+            current_guess = find_best_entropy_guess(possible_answers, possible_answers)
 
         # --- THỰC HIỆN ĐOÁN VÀ LẤY KẾT QUẢ ---
         result = game.guess(current_guess)
+        # Kiểm tra nếu result là None (trường hợp hết lượt)
+        if result is None:
+            break
+            
         feedback = "".join(result["results"])
         print(f"Đoán từ: '{current_guess}' -> Kết quả: {feedback}")
 
@@ -224,15 +228,30 @@ def play_entropy(word_list: list[str], target_word: str = None, max_attempts: in
             print(
                 f"Chúc mừng! Bạn đã đoán đúng từ '{game.target_word}' sau {game.current_attempt} lần đoán."
             )
-            return game.current_attempt
+            # Trả về số lượt đoán khi thắng
+            return game.current_attempt - 1 
 
         # --- CẬP NHẬT DANH SÁCH ĐÁP ÁN KHẢ THI ---
         # Lọc lại danh sách possible_answers dựa trên phản hồi vừa nhận được
         new_possible_answers = []
         for word in possible_answers:
+            # Từ `current_guess` vừa đoán phải khác `word` đang xét, trừ khi nó là từ duy nhất còn lại
+            if word == current_guess:
+                continue
             if simulate_feedback(current_guess, word) == feedback:
                 new_possible_answers.append(word)
         possible_answers = new_possible_answers
+        
+        # Nếu không còn từ nào khả thi, có lỗi logic ở đâu đó
+        if not possible_answers:
+             # Có thể từ đoán cuối cùng chính là đáp án, thêm nó lại
+            if simulate_feedback(current_guess, game.target_word) == feedback and current_guess == game.target_word:
+                 possible_answers = [current_guess]
+            else:
+                print("Lỗi: Không còn đáp án nào khả thi!")
+                break
+
 
     # --- XỬ LÝ KHI THUA ---
     print(f"Rất tiếc, bạn đã hết lượt đoán. Từ cần tìm là '{game.target_word}'.")
+    return max_attempts

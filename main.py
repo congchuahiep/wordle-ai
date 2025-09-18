@@ -26,14 +26,14 @@ def save_json(filename: str, words: list[str]):
 #     pw = PowerWords(all_words)
 
 #     # Chỉ lấy phần word thôi (bỏ power)
-#     top_50 = [w for w, _ in pw.word_list[:50]]
-#     bottom_50 = [w for w, _ in pw.word_list[-50:]]
-#     random_50 = [w for w, _ in random.sample(pw.word_list, 100)]
+#     top_200 = [w for w, _ in pw.word_list[:200]]
+#     bottom_200 = [w for w, _ in pw.word_list[-200:]]
+#     random_200 = [w for w, _ in random.sample(pw.word_list, 200)]
 
 #     # Xuất ra 3 file JSON riêng
-#     save_json("high_power.json", top_50)
-#     save_json("low_power.json", bottom_50)
-#     save_json("random_power.json", random_50)
+#     save_json("high_power.json", top_200)
+#     save_json("low_power.json", bottom_200)
+#     save_json("random_power.json", random_200)
 
 
 if __name__ == "__main__":
@@ -58,3 +58,7 @@ if __name__ == "__main__":
         play_entropy(words, target_word=args.target)
     else:
         play_manual(word_list=words, target_word=args.target)
+
+
+# if __name__ == "__main__":
+#     main()
