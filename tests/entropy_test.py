@@ -44,7 +44,6 @@ class PlayEntropyTest(unittest.TestCase):
 
         f = io.StringIO()
         for target in words:
-            # Sửa play_entropy để trả về số lượt đoán và trạng thái thành công/thất bại
             with redirect_stdout(f):  # Chặn mọi print bên trong play_entropy
                 result, elapsed = timed_run(play_entropy, self.word_list, target_word=target, max_attempts=6)
             total_time += elapsed
